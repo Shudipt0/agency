@@ -1,0 +1,3 @@
+[submodule "Dokan"]
+	path = Dokan
+	url = https://github.com/Shudipt0/Dokan.git
