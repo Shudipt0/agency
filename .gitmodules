@@ -4,3 +4,6 @@
 [submodule "GreenDev"]
 	path = GreenDev
 	url = https://github.com/Shudipt0/GreenDev.git
+[submodule "agency_client"]
+	path = agency_client
+	url = https://github.com/Shudipt0/agency_client.git
