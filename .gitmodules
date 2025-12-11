@@ -1,3 +1,6 @@
 [submodule "Dokan"]
 	path = Dokan
 	url = https://github.com/Shudipt0/Dokan.git
+[submodule "GreenDev"]
+	path = GreenDev
+	url = https://github.com/Shudipt0/GreenDev.git
