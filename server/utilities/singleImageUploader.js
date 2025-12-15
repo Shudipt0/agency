@@ -1,6 +1,10 @@
 import fs from "fs";
 import multer from "multer";
 import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const uploader = (
   subfolder_path,
@@ -9,7 +13,9 @@ export const uploader = (
   error_msg
 ) => {
   //   file upload folder
-  const UPLOAD_FOLDER = `${__dirname}/../public/uploads/${subfolder_path}`;
+  // const UPLOAD_FOLDER = `${__dirname}/../public/uploads/${subfolder_path}`;
+  const UPLOAD_FOLDER = `${__dirname}/../public/uploads/images${subfolder_path}`;
+
 
   // ensure directory exists
   fs.mkdirSync(UPLOAD_FOLDER, { recursive: true });
@@ -30,7 +36,7 @@ export const uploader = (
     },
   });
 
-  const fileFilter = (req, res, cb) => {
+  const fileFilter = (req, file, cb) => {
     // if no file is provided, just continue
     if (!file || !file.mimetype) {
       return cb(null, true);

@@ -1,4 +1,5 @@
 import { db } from "../connect.js";
+import cloudinary from "../utilities/cloudinary.js";
 
 // create a new project
 export const addProject = async (req, res) => {
@@ -8,11 +9,12 @@ export const addProject = async (req, res) => {
     project.category,
     project.description,
     project.image,
+    project.image_public_id,
     project.link,
   ];
 
   const q =
-    "INSERT INTO Projects (`title`,`category`, `description`, `image`, `link`) VALUES (?)";
+    "INSERT INTO Projects (`title`,`category`, `description`, `image`, `image_public_id`, `link`) VALUES (?)";
 
   try {
     const [result] = await db.promise().query(q, [values]);
@@ -62,10 +64,11 @@ export const updateProject = async (req, res) => {
     project.category,
     project.description,
     project.image,
+    project.image_public_id,
     project.link,
   ];
   const q = `UPDATE Projects 
-    SET title = ?, category = ?, description = ?, image = ?, link = ?
+    SET title = ?, category = ?, description = ?, image = ?, image_public_id = ?, link = ?
     WHERE id = ? `;
 
   try {
@@ -90,15 +93,31 @@ export const updateProject = async (req, res) => {
 // get a single project by id
 export const deleteProject = async (req, res) => {
   const id = req.params.id;
+  const id_q = `SELECT image_public_id FROM Projects WHERE id = ?`;
   const q = `DELETE FROM Projects WHERE id = ?`;
 
   try {
-    const [result] = await db.promise().query(q, [id]);
-
-    // if project not exists
-    if (result.affectedRows === 0) {
+    // get project first
+    const [rows] = await db.promise().query(id_q, [id]);
+    if (rows.length === 0) {
       return res.status(404).json({ message: "Project not found" });
     }
+
+    const { image_public_id } = rows[0];
+
+    // 2️⃣ Delete image from Cloudinary
+    if (image_public_id) {
+      try {
+        const result = await cloudinary.uploader.destroy(image_public_id);
+        console.log("Cloudinary result:", result);
+      } catch (cloudErr) {
+        console.error("Cloudinary delete failed:", cloudErr.message);
+        // DO NOT stop execution
+      }
+    }
+
+    // delete from database
+    const [result] = await db.promise().query(q, [id]);
 
     res
       .status(200)
