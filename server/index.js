@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import contactRoutes from './routes/contacts.js';
 import expertRoutes from './routes/experts.js';
@@ -7,6 +8,8 @@ import userRoutes from './routes/users.js';
 
 const app = express();
 app.use(express.json());
+dotenv.config();
+const port = process.env.PORT || 5000; 
 
 
 app.use('/api/v1/projects', projectRoutes);
@@ -15,6 +18,17 @@ app.use('/api/v1/experts', expertRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/contacts', contactRoutes);
 
-app.listen(5000, () => {
-    console.log('Server is running on port 5000');
+
+// default error handler
+const errorHandler = (err, req, res, next) => {
+    if(res.headersSent) {
+        return next(err);
+    }
+    res.status(500).json({ error: err.message });
+};
+
+app.use(errorHandler);
+
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
 })
