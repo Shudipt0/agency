@@ -32,7 +32,27 @@ export const addProject = async (req, res) => {
 
 // get all projects
 export const getAllProjects = async (req, res) => {
-  const q = "SELECT * FROM Projects";
+  // const q = "SELECT * FROM Projects";
+
+  const q = `SELECT 
+   p.id,
+   p.title,
+   p.description,
+   p.image,
+   p.link,
+  COALESCE(
+        JSON_ARRAYAGG(
+            JSON_OBJECT(
+                 'creator_id', m.id,
+                 'name', m.name
+            )
+        ),
+     JSON_ARRAY()
+  ) AS creators
+FROM Projects AS p
+LEFT JOIN Project_creators AS pc ON (p.id = pc.project_id)
+LEFT JOIN Members AS m ON (pc.creator_id = m.id)
+GROUP BY p.id;`
 
   try {
     const [rows] = await db.promise().query(q);

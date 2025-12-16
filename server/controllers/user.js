@@ -44,7 +44,23 @@ export const getAllUsers = async (req, res) => {
 // get a single user by id
 export const getUser = async (req, res) => {
   const id = req.params.id;
-  const q = "SELECT * FROM Members WHERE id = ?";
+  // const q = "SELECT * FROM Members WHERE id = ?";
+
+  const q = `SELECT m.id, m.name, m.profession, m.bio_data, m.image,
+  COALESCE(
+        JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'project_id', p.id,
+                'title', p.title
+            )
+        ),
+        JSON_ARRAY()
+    ) AS projects
+  FROM Members AS m
+ LEFT JOIN Project_creators AS pc ON (m.id = pc.creator_id)
+ LEFT JOIN Projects AS p ON (pc.project_id = p.id)
+ WHERE (m.id = ?)
+ GROUP BY m.id, m.name`;
 
   try {
     const [rows] = await db.promise().query(q, [id]);
