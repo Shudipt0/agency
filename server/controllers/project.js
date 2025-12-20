@@ -37,6 +37,7 @@ export const getAllProjects = async (req, res) => {
   const q = `SELECT 
    p.id,
    p.title,
+   p.category,
    p.description,
    p.image,
    p.link,
