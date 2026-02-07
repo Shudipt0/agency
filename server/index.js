@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import cors from 'cors';
 import contactRoutes from './routes/contacts.js';
 import expertRoutes from './routes/experts.js';
 import project_creatorRoutes from './routes/project_creators.js';
@@ -10,8 +11,18 @@ import userRoutes from './routes/users.js';
 const app = express();
 app.use(express.json());
 dotenv.config();
+// cors
+app.use(cors({
+    origin: 'http://localhost:3000', // Update this to your frontend URL
+    credentials:true,
+}))
+
 const port = process.env.PORT || 5000; 
 
+// Health check endpoint (add this!)
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
 
 app.use('/api/v1/projects', projectRoutes);
 app.use('/api/v1/services', serviceRoutes);
