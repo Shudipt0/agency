@@ -34,30 +34,78 @@ export const addProject = async (req, res) => {
 export const getAllProjects = async (req, res) => {
   // const q = "SELECT * FROM Projects";
 
-  const q = `SELECT 
-   p.id,
-   p.title,
-   p.category,
-   p.description,
-   p.image,
-   p.link,
-  COALESCE(
-        JSON_ARRAYAGG(
-            JSON_OBJECT(
-                 'creator_id', m.id,
-                 'name', m.name
-            )
-        ),
-     JSON_ARRAY()
-  ) AS creators
-FROM Projects AS p
-LEFT JOIN Project_creators AS pc ON (p.id = pc.project_id)
-LEFT JOIN Members AS m ON (pc.creator_id = m.id)
-GROUP BY p.id;`
+  // for new mysql version and worked
+//   const q = `SELECT 
+//    p.id,
+//    p.title,
+//    p.category,
+//    p.description,
+//    p.image,
+//    p.link,
+//   COALESCE(
+//         JSON_ARRAYAGG(
+//             JSON_OBJECT(
+//                  'creator_id', m.id,
+//                  'name', m.name
+//             )
+//         ),
+//      JSON_ARRAY()
+//   ) AS creators
+// FROM Projects AS p
+// LEFT JOIN Project_creators AS pc ON (p.id = pc.project_id)
+// LEFT JOIN Members AS m ON (pc.creator_id = m.id)
+// GROUP BY p.id;`
+
+  // try {
+  //   const [rows] = await db.promise().query(q);
+  //   res.status(200).json(rows);
+  // } catch (err) {
+  //   res.status(500).json(err);
+  // }
+
+  // for old mysql version
+const q = `
+    SELECT 
+      p.id,
+      p.title,
+      p.category,
+      p.description,
+      p.image,
+      p.link,
+      m.id AS creator_id,
+      m.name AS creator_name
+    FROM Projects p
+    LEFT JOIN Project_creators pc ON p.id = pc.project_id
+    LEFT JOIN Members m ON pc.creator_id = m.id
+  `;
 
   try {
     const [rows] = await db.promise().query(q);
-    res.status(200).json(rows);
+
+    const projectsMap = {};
+
+    rows.forEach(row => {
+      if (!projectsMap[row.id]) {
+        projectsMap[row.id] = {
+          id: row.id,
+          title: row.title,
+          category: row.category,
+          description: row.description,
+          image: row.image,
+          link: row.link,
+          creators: []
+        };
+      }
+
+      if (row.creator_id) {
+        projectsMap[row.id].creators.push({
+          creator_id: row.creator_id,
+          name: row.creator_name
+        });
+      }
+    });
+
+    res.status(200).json(Object.values(projectsMap));
   } catch (err) {
     res.status(500).json(err);
   }
