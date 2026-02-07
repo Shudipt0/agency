@@ -1,7 +1,7 @@
 import express from 'express';
 import { addService, deleteService, getAllServices, getService, updateService } from '../controllers/service.js';
 import { imageUpload } from '../middlewares/imageUpload.js';
-import { validateService } from '../middlewares/Service.validate.js';
+import { validateService } from '../middlewares/service.validate.js';
 
 
 
