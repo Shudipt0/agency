@@ -8,9 +8,10 @@ import projectRoutes from './routes/projects.js';
 import serviceRoutes from './routes/services.js';
 import userRoutes from './routes/users.js';
 
+dotenv.config();
 const app = express();
 app.use(express.json());
-dotenv.config();
+
 // cors
 app.use(cors({
     origin: 'http://localhost:3000', // Update this to your frontend URL
