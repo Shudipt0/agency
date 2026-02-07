@@ -41,34 +41,87 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// get a single user by id
+// get a single user by id new version
+// export const getUser = async (req, res) => {
+//   const id = req.params.id;
+//   // const q = "SELECT * FROM Members WHERE id = ?";
+
+//   const q = `SELECT m.id, m.name, m.profession, m.bio_data, m.image,
+//   COALESCE(
+//         JSON_ARRAYAGG(
+//             JSON_OBJECT(
+//                 'project_id', p.id,
+//                 'title', p.title
+//             )
+//         ),
+//         JSON_ARRAY()
+//     ) AS projects
+//   FROM Members AS m
+//  LEFT JOIN Project_creators AS pc ON (m.id = pc.creator_id)
+//  LEFT JOIN Projects AS p ON (pc.project_id = p.id)
+//  WHERE (m.id = ?)
+//  GROUP BY m.id, m.name`;
+
+//   try {
+//     const [rows] = await db.promise().query(q, [id]);
+//     res.status(200).json(rows);
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// };
+
+// get a single user by id old version
 export const getUser = async (req, res) => {
   const id = req.params.id;
-  // const q = "SELECT * FROM Members WHERE id = ?";
 
-  const q = `SELECT m.id, m.name, m.profession, m.bio_data, m.image,
-  COALESCE(
-        JSON_ARRAYAGG(
-            JSON_OBJECT(
-                'project_id', p.id,
-                'title', p.title
-            )
-        ),
-        JSON_ARRAY()
-    ) AS projects
-  FROM Members AS m
- LEFT JOIN Project_creators AS pc ON (m.id = pc.creator_id)
- LEFT JOIN Projects AS p ON (pc.project_id = p.id)
- WHERE (m.id = ?)
- GROUP BY m.id, m.name`;
+  const q = `
+    SELECT 
+      m.id,
+      m.name,
+      m.profession,
+      m.bio_data,
+      m.image,
+      p.id AS project_id,
+      p.title AS project_title
+    FROM Members m
+    LEFT JOIN Project_creators pc ON m.id = pc.creator_id
+    LEFT JOIN Projects p ON pc.project_id = p.id
+    WHERE m.id = ?
+    ORDER BY p.id
+  `;
 
   try {
     const [rows] = await db.promise().query(q, [id]);
-    res.status(200).json(rows);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Aggregate projects in JS
+    const user = {
+      id: rows[0].id,
+      name: rows[0].name,
+      profession: rows[0].profession,
+      bio_data: rows[0].bio_data,
+      image: rows[0].image,
+      projects: [],
+    };
+
+    for (const row of rows) {
+      if (row.project_id) {
+        user.projects.push({
+          project_id: row.project_id,
+          title: row.project_title,
+        });
+      }
+    }
+
+    res.status(200).json(user);
   } catch (err) {
     res.status(500).json(err);
   }
 };
+
 
 // update a user by id
 export const updateUser = async (req, res) => {
