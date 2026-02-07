@@ -14,7 +14,7 @@ app.use(express.json());
 
 // cors
 app.use(cors({
-    origin: 'http://localhost:3000', // Update this to your frontend URL
+    origin: 'https://agency-client-ten.vercel.app', // Update this to your frontend URL
     credentials:true,
 }))
 
